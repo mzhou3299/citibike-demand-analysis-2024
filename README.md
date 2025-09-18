@@ -59,19 +59,26 @@ This mirrors recreational cycling patterns and highlights capacity stress during
 
 Based on the analysis, Citi Bike could:
 
-- **Dynamic rebalancing** → Prioritize bike movement into Midtown and Brooklyn hubs during peaks.  
-  *High-demand clusters in Midtown and Brooklyn suggest rebalancing resources here during rush hours.*
+- **Dynamic rebalancing** → Concentrate bike movement in Midtown and Brooklyn hubs during peak hours.  
+  ![Station Demand](figures/station_demand.png)  
+  *High-demand clusters highlight where rebalancing trucks deliver the most impact — targeting these areas reduces stockouts and idle docks.*
 
-- **Seasonal planning** → Expand summer fleet and operations to handle surges.  
-  *Monthly traffic trends show clear spikes in warmer months, highlighting the need for seasonal scaling.*
+- **Seasonal planning** → Expand fleet size and staffing in the summer months to absorb surges.  
+  ![Monthly Rides](figures/monthly_trend.png)  
+  *Summer peaks show the system strains under higher demand; scaling up capacity seasonally ensures smoother rider experience.*
 
-- **Weather-aware strategy** → Adjust staffing and redistribution based on rain forecasts.  
-  ![Precipitation Heatmap](figures/precip_heatmap.png)  
-  *Rides drop sharply on rainy days, suggesting weather-sensitive operations would improve efficiency.*
+- **Weather-aware strategy** → Integrate rain forecasts into redistribution and staffing decisions.  
+  ![Temperature × Precipitation](figures/temp_precip_heatmap.png)  
+  *Even light rain suppresses demand more than cold — short-term ops adjustments should focus on rainy windows, not just temperature swings.*
 
-- **Expansion targeting** → Invest in outer borough neighborhoods with steady growth potential.  
-  ![Station Variance](figures/station_variance.png)  
-  *Certain outer borough stations show consistent, rising demand, supporting targeted expansion.*
+- **Expansion opportunities** → Invest in outer-borough neighborhoods with consistent, moderate demand.  
+  ![Expansion Opportunities](figures/expansion_opportunities.png)  
+  *Low-variance, steadily used stations suggest reliable everyday trips; expanding here steadily grows the user base without volatility.*
+
+- **Consolidation opportunities** → Reevaluate underused or volatile stations that strain resources.  
+  ![Consolidation Opportunities](figures/consolidation_opportunities.png)  
+  *Stations with persistently low ridership or extreme variability may warrant consolidation, relocation, or redesign to improve efficiency.*
+
  
 
 ---
