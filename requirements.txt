@@ -1,0 +1,12 @@
+pandas
+numpy
+matplotlib
+seaborn
+geopandas
+shapely
+contextily
+plotly
+holidays
+jupyter
+Meteostat
+Folium

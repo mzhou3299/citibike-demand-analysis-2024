@@ -1,0 +1,16 @@
+# Virtual environment
+venv/
+
+# Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Raw / large data files
+data/
+dataframe_final.csv
+
+# OS junk files
+.DS_Store
