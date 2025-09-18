@@ -55,15 +55,6 @@ This mirrors recreational cycling patterns and highlights capacity stress during
 
 ---
 
-### 5. Event Impacts
-![Knicks Game Heatmap](figures/knicks_game.png)  
-Before Knicks games at Madison Square Garden, arrivals **spike sharply** at nearby stations.  
-This shows how **major events temporarily reshape demand geography**, concentrating trips around venues.
-
-➡️ [Explore interactive map (HTML)](station_demand_map.html)
-
----
-
 ## Recommendations
 Based on the analysis, Citi Bike could:
 - **Dynamic rebalancing** → Prioritize bike movement into Midtown and Brooklyn hubs during peaks.  
