@@ -2,7 +2,7 @@
 
 ## Project Overview
 This project analyzes NYC Citi Bike ridership across 2024 to understand how **geography, weather, and events** influence demand.  
-The goal is to identify clear usage patterns and highlight operational implications for bike-share management.  
+The goal is to identify clear usage patterns and highlight operational implications for bike-share management.
 
 ---
 
@@ -56,11 +56,23 @@ This mirrors recreational cycling patterns and highlights capacity stress during
 ---
 
 ## Recommendations
+
 Based on the analysis, Citi Bike could:
+
 - **Dynamic rebalancing** → Prioritize bike movement into Midtown and Brooklyn hubs during peaks.  
+  *High-demand clusters in Midtown and Brooklyn suggest rebalancing resources here during rush hours.*
+
 - **Seasonal planning** → Expand summer fleet and operations to handle surges.  
+  *Monthly traffic trends show clear spikes in warmer months, highlighting the need for seasonal scaling.*
+
 - **Weather-aware strategy** → Adjust staffing and redistribution based on rain forecasts.  
+  ![Precipitation Heatmap](figures/precip_heatmap.png)  
+  *Rides drop sharply on rainy days, suggesting weather-sensitive operations would improve efficiency.*
+
 - **Expansion targeting** → Invest in outer borough neighborhoods with steady growth potential.  
+  ![Station Variance](figures/station_variance.png)  
+  *Certain outer borough stations show consistent, rising demand, supporting targeted expansion.*
+ 
 
 ---
 
