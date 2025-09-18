@@ -72,11 +72,11 @@ Based on the analysis, Citi Bike could:
   *Even light rain suppresses demand more than cold — short-term ops adjustments should focus on rainy windows, not just temperature swings.*
 
 - **Expansion opportunities** → Invest in outer-borough neighborhoods with consistent, moderate demand.  
-  ![Expansion Opportunities](figures/expansion_opportunities.png)  
+  ![Expansion Opportunities](figures/expansion_candidates.png)  
   *Low-variance, steadily used stations suggest reliable everyday trips; expanding here steadily grows the user base without volatility.*
 
 - **Consolidation opportunities** → Reevaluate underused or volatile stations that strain resources.  
-  ![Consolidation Opportunities](figures/consolidation_opportunities.png)  
+  ![Consolidation Opportunities](figures/consolidation_candidates.png)  
   *Stations with persistently low ridership or extreme variability may warrant consolidation, relocation, or redesign to improve efficiency.*
 
  
