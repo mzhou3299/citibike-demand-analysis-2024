@@ -9,7 +9,7 @@ The goal is to identify clear usage patterns and highlight operational implicati
 ## Methodology
 
 ### Data sources
-- Citi Bike trip data (January–July 2024)  
+- Citi Bike trip data (2024)  
 - NOAA hourly and daily weather data for NYC  
 - NYC Neighborhood Tabulation Areas (NTA) shapefile  
 
