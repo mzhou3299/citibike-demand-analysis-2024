@@ -1,5 +1,5 @@
-pandas
-numpy
+pandas<3        # notebooks were written for pandas 2 (pandas 3 changes string and copy behavior)
+numpy>=2.0,<2.4 # 2.0+ for np.trapezoid; below 2.4 to avoid pandas 2.x deprecation warnings
 matplotlib
 seaborn
 geopandas
@@ -8,5 +8,10 @@ contextily
 plotly
 holidays
 jupyter
-Meteostat
+Meteostat<2     # meteostat 2 removed the Hourly API used for weather
 Folium
+scikit-learn
+scipy
+duckdb
+pyarrow
+kagglehub
