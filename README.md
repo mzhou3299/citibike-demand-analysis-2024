@@ -56,8 +56,6 @@ Without live dock counts, the recalibrated model averaged 10.8 minutes, compared
 - Waits are capped at 60 minutes and measured in 2-minute steps. The replay assumes riders don't affect each other, estimates travel time from straight-line distance, and uses observed weather in place of a forecast.
 - No confidence intervals were calculated, so small differences should not be interpreted as meaningful improvements.
 
-More detail is in the notebook.
-
 ## How to run
 1. Create an environment (Python 3.10+, tested on 3.13):
    ```bash
