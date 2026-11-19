@@ -7,7 +7,7 @@ Two analyses of NYC Citi Bike data from 2024:
 | **Part 1** | [`Final Notebook.ipynb`](Final%20Notebook.ipynb) | Where, when and in what weather do people ride? |
 | **Part 2** | [`Decision_model.ipynb`](Decision_model.ipynb) | A rider reaches a full station: should they wait for a dock or ride to a nearby station? ([results](#part-2-wait-or-ride-on-a-decision-model-for-full-stations)) |
 
-Part 1 showed that station traffic in a single 30-minute window is too noisy to forecast reliably. Part 2 asks a narrower question that a simple probability model *can* answer, and tests whether its answers lead to better decisions than simple rules of thumb.
+Part 1 found that traffic at individual stations swings widely from one 30-minute window to the next (at the busiest station, the standard deviation is about as large as the average). Part 2 asks a narrower question that a simple probability model *can* answer, and tests whether its answers lead to better decisions than simple rules of thumb.
 
 ---
 
@@ -25,52 +25,51 @@ The goal is to identify clear usage patterns and highlight operational implicati
 - NYC Neighborhood Tabulation Areas (NTA) boundaries (`Neighborhood_NTA.geojson`)
 
 ### Data cleaning
-- Removed trips with missing or implausible times/durations
-- Ensured that each ride in the data was only accounted for a single time
-- Converted timestamps to **America/New_York** and extracted features (hour, day-of-week, month)
-- Incorporated weather data with ridership using nearest hourly timestamps
-- Created holiday and weekend indicator variables
-
-> **Known issue:** trip timestamps are New York local time, but Meteostat weather timestamps are UTC, and this notebook joins the two without converting. Weather is therefore matched to rides 4–5 hours late. Part 2 corrects this in its own pipeline; the Part 1 weather figures below have not been regenerated.
+- Combined all 2024 monthly trip files (44.3 million trips)
+- Dropped trips with unparseable timestamps or a missing start or end station, keeping only rides recorded at both ends (44.2 million)
+- Checked that every ride id appears only once
+- Flagged weekends and US holidays, and added day of week, month and season
+- Converted hourly weather from UTC to New York time and joined it to rides in 30-minute windows
 
 ### Spatial preparation
-- Converted Citi Bike stations to a GeoDataFrame
-- Spatially joined stations to NTAs using polygon containment (`geopandas.sjoin`)
-- Aggregated demand to both station level and NTA level, enabling neighborhood-scale analysis
+- Placed each station at the median of its trip start coordinates
+- Spatially joined stations to NTAs (`geopandas.sjoin`); stations that fall outside NYC are Jersey City and Hoboken stations, which have their own Citi Bike data
+- Summarized demand at both station level and NTA (neighborhood) level
 
 ### Analysis pipeline
-1. Aggregate rides to 30-minute and daily levels
-2. Merge in weather and holiday features
-3. Aggregate to NTA-level demand time series for stability
-4. Generate exploratory analyses:
-   - Maps of mean and variance of demand by neighborhood
-   - Heatmaps of ridership vs temperature/precipitation
-   - Monthly curves to capture seasonal cycles
-   - Interactive demand maps
-5. Identify geographic hot spots, high-variance neighborhoods, and weather-driven demand dips
+1. Count arrivals and departures at each station in 30-minute windows, and net traffic (arrivals − departures)
+2. Merge in weather, holiday and calendar features
+3. Compute per-station statistics (average, variance, total) and neighborhood and borough summaries
+4. Explore:
+   - the busiest and quietest stations
+   - demand vs. variance by borough and neighborhood
+   - the monthly trend, and heatmaps of rides by month, day of week, temperature and precipitation
+   - static and interactive station demand maps, and arrivals before a Knicks game at Madison Square Garden compared with other Friday evenings
+
+**Two ways of counting.** Station-level figures count *rides in + out* (each ride counts at both its start and end station). Citywide figures count each ride once.
 
 ## Key Insights & Visuals
 
 ### 1. Station Demand Map
 ![Station Demand](figures/station_demand.png)
-Hotspots are concentrated in **Midtown and Downtown Manhattan** as well as parts of **Brooklyn**.
+Hotspots are concentrated in **Midtown and Downtown Manhattan**: 49 of the 50 busiest stations are in Manhattan, and the busiest Brooklyn stations are mostly in **Williamsburg**.
 Outer borough stations show lower but more consistent usage. An interactive version is in [`station_demand_map.html`](station_demand_map.html) (download and open in a browser).
 
 ---
 
 ### 2. Neighborhood Variability
 ![Station Variance](figures/station_variance.png)
-Stations in the top 20 neighborhoods form distinct clusters:
-- Midtown/Downtown: **high demand, high variance** (commuter and tourist flows).
-- Outer boroughs: **lower demand, lower variance** (consistent neighborhood trips).
+In the 20 busiest neighborhoods, variance rises steeply with demand:
+- The busiest stations, almost all in Manhattan, are also the most volatile. At the busiest station, the standard deviation per half hour is about as large as the average.
+- Quieter stations are steadier in absolute terms.
 
-This highlights how station type drives both volume and volatility.
+Volume and volatility go together.
 
 ---
 
 ### 3. Weather Effects
-- **Temperature**: Ridership peaks in the **80–90°F range**, boosted by summer tourism and longer daylight.
-- **Precipitation**: Even light rain sharply reduces rides, with heavy rain cutting usage to near zero.
+- **Temperature**: Ridership rises steadily with temperature and is highest above **80°F**. Warm half-hours are mostly summer daytime, so this partly reflects season and time of day (see below).
+- **Precipitation**: At most temperatures, light rain clearly lowers ridership compared with dry weather.
 
 ![Temperature Heatmap](figures/temp_heatmap.png)
 
@@ -78,25 +77,25 @@ Weather is a strong, immediate driver of demand — making it essential for oper
 
 ![Temp vs Precip Heatmap](figures/temp_precip_heatmap.png)
 
-This heatmap shows average rides per 30min by **temperature (°F)** and **precipitation (mm)**.
+This heatmap shows average citywide rides per 30min by **temperature (°F)** and **precipitation (mm per 30 min)**.
 Key patterns:
-- Ridership holds up in cool, dry weather.
-- Even light rain causes sharp declines.
-- Heavy rain almost eliminates demand, regardless of temperature.
+- In dry weather, ridership climbs steadily from the coldest to the hottest half-hours.
+- At the same temperature, half-hours with light rain usually have noticeably fewer rides.
+- Heavier rain is rare (each cell is only a handful of half-hours), so those cells are noisy: a few summer storms that hit during busy hours still show high counts.
 
-Rain is a **bigger suppressor of demand than cold** — critical for forecasting and operations.
+These heatmaps average over all hours of the day, so they mix weather with time of day and season (hot half-hours are mostly summer afternoons). Part 2 separates them with a regression that holds station, time of day and season fixed: **any rain cuts rides by about 22%, heavy rain by about 55% (3 mm per half hour), and below 35°F rides are about 45% lower than at 65–75°F.**
 
 ---
 
 ### 4. Seasonality
 ![Monthly Rides](figures/monthly_trend.png)
-Monthly totals follow a clear curve:
-- **Winter lows** (January–February).
+Monthly rides follow a clear curve (44.2 million rides in 2024):
+- **Winter lows** (January–February, about 2 million a month).
 - **Spring climb** (March–May).
-- **Summer peak** (July–August).
-- **Fall tapering** (September–November).
+- **High plateau** from June through October, peaking in **October** (5.1 million).
+- **Sharp drop** in November–December.
 
-This mirrors recreational cycling patterns and highlights capacity stress during summer.
+Demand is highest and steadiest from June through October.
 
 ---
 
@@ -104,22 +103,24 @@ This mirrors recreational cycling patterns and highlights capacity stress during
 
 Based on the analysis, Citi Bike could implement:
 
-- **Dynamic rebalancing** → Concentrate bike movement in Midtown and Brooklyn hubs during peak hours.
-  *High-demand clusters (see the station demand map above) highlight where rebalancing trucks deliver the most impact — targeting these areas reduces stockouts and idle docks.*
+- **Dynamic rebalancing** → Focus bike movement on the Manhattan hotspots, where 49 of the 50 busiest stations are.
+  *The station demand map shows where activity concentrates; that's where rebalancing trucks reach the most riders.*
 
-- **Seasonal planning** → Expand fleet size and staffing in the summer months to absorb surges.
-  *Summer peaks show the system strains under higher demand; scaling up capacity seasonally ensures smoother rider experience.*
+- **Seasonal planning** → Expand fleet size and staffing from June through October to absorb surges.
+  *Ridership stays near its peak for five months, so capacity added for that period serves the most riders.*
 
 - **Weather-aware strategy** → Integrate rain forecasts into redistribution and staffing decisions.
-  *Even light rain suppresses demand more than cold — short-term ops adjustments should focus on rainy windows, not just temperature swings.*
+  *Rain cuts demand right away (by about a fifth for any rain, more for heavy rain), so short-term ops adjustments should focus on rainy windows; cold lowers demand too, but it changes slowly with the season.*
 
-- **Expansion opportunities** → Invest in outer-borough neighborhoods with consistent, moderate demand.
+- **Expansion opportunities** → Add docks and bikes at the busiest stations: 19 of the top 20 are in Manhattan between Midtown and the Financial District, plus one in Williamsburg.
   ![Expansion Opportunities](figures/expansion_candidates.png)
-  *Low-variance, steadily used stations suggest reliable everyday trips; expanding here steadily grows the user base without volatility.*
+  *Each of these stations averages 12–19 rides in or out every half hour, so extra capacity there serves the most riders.*
 
-- **Consolidation opportunities** → Reevaluate underused or volatile stations that strain resources.
+- **Consolidation opportunities** → Reevaluate the quietest stations: 7 of the bottom 20 are in the Bronx, and the rest are in East Flatbush and Sunset Park (Brooklyn), Corona and Maspeth (Queens), Inwood, and a second dock at Pier 40 in the West Village.
   ![Consolidation Opportunities](figures/consolidation_candidates.png)
-  *Stations with persistently low ridership or extreme variability may warrant consolidation, relocation, or redesign to improve efficiency.*
+  *Each sees fewer than 5 rides in or out a day; these may warrant consolidation, relocation, or redesign to improve efficiency.*
+
+Both lists rank only the 2,013 NYC stations with rides in every month of 2024. Jersey City and Hoboken stations (which have their own Citi Bike data) and stations that opened, closed or were renamed mid-year would otherwise look artificially quiet. Also left out are 20 stations that never appear as a trip start, so have no recorded location.
 
 ---
 
@@ -177,7 +178,7 @@ Raw data is not stored in the repository (see below).
    source .venv/bin/activate
    pip install -r requirements.txt
    ```
-2. **Trip data:** download the 2024 monthly trip files from [Citi Bike System Data](https://citibikenyc.com/system-data) and unzip them. `Final Notebook` reads `data/**/*.csv`; `Decision_model` reads the path in `TRIP_DATA_GLOB` (configuration cell), so point it to the same folder.
+2. **Trip data:** download the 2024 monthly trip files from [Citi Bike System Data](https://citibikenyc.com/system-data) and unzip them into `data/trips/` (both notebooks read from there).
 3. **Station status data (Part 2 only):** the notebook downloads `citi_bike_stations_2024.parquet` (4.2 GB) from the public Kaggle dataset [rosenthal/citi-bike-stations](https://www.kaggle.com/datasets/rosenthal/citi-bike-stations) into `data/status/` on first run (no Kaggle login needed), then builds a smaller cache.
 4. Run the notebooks top to bottom. Both load a full year of trips (44 million rides), so they need several GB of RAM; Part 2 keeps this down by loading only the 7 columns it uses. The one-time status cache takes a few minutes.
 
@@ -185,4 +186,4 @@ Raw data is not stored in the repository (see below).
 - Trip data: [Citi Bike System Data](https://citibikenyc.com/system-data), used under the Citi Bike data license agreement.
 - Station status snapshots: [rosenthal/citi-bike-stations](https://www.kaggle.com/datasets/rosenthal/citi-bike-stations) on Kaggle (CC BY 4.0).
 - Weather: [Meteostat](https://meteostat.net) (CC BY-NC 4.0).
-- **Python**: pandas, NumPy, matplotlib, seaborn, geopandas, plotly, folium, scikit-learn, SciPy, DuckDB.
+- **Python**: pandas, NumPy, matplotlib, seaborn, geopandas, contextily, folium, scikit-learn, SciPy, DuckDB.

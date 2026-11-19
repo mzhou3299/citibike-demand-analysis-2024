@@ -5,7 +5,6 @@ seaborn
 geopandas
 shapely
 contextily
-plotly
 holidays
 jupyter
 Meteostat<2     # meteostat 2 removed the Hourly API used for weather
