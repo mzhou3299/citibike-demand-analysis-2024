@@ -1,21 +1,20 @@
-# Citi Bike 2024: Demand Patterns and a Wait-or-Ride-On Decision
+# Citi Bike 2024: Demand Patterns and a Wait-or-Ride Decision
 
-Two questions about NYC Citi Bike, using all 44.2 million trips from 2024:
+This project explores demand across 44.2 million NYC Citi Bike trips in 2024, then tests a simple model for deciding whether to wait at a full station or ride to another one.
 
-1. **Where, when and in what weather do people ride?** [`Final Notebook.ipynb`](Final%20Notebook.ipynb)
-2. **If you arrive at a full station, should you wait for a dock or ride to a nearby one?** [`Decision_model.ipynb`](Decision_model.ipynb)
-
----
+- Part 1, demand patterns: [`Final Notebook.ipynb`](Final%20Notebook.ipynb)
+- Part 2, the wait-or-ride decision: [`Decision_model.ipynb`](Decision_model.ipynb)
 
 ## Part 1: Demand patterns
 
-**What I did.** Counted arrivals and departures at every station in 30-minute windows, joined hourly Central Park weather (converted from UTC to New York time) and US holidays, matched stations to NYC neighborhoods, and summarized demand by station, neighborhood, month, temperature and rain.
+### Method
+Arrivals and departures were counted at each station in 30-minute windows and joined with hourly Central Park weather (converted from UTC to New York time) and US holidays. Stations were matched to NYC neighborhoods.
 
-**What I found**
-- Ridership climbs from about 2 million rides a month in January–February to a plateau from June through October, peaking at 5.1 million in October.
-- Activity is concentrated in Manhattan: 49 of the 50 stations with the most traffic are there. Traffic at a single station varies a lot across half-hours: at the busiest station, the standard deviation over the year's half-hours is about as large as the average.
-- Rides rise with temperature. Rainy half-hours are too few to compare cell by cell in a heatmap (no cell with over 1 mm of rain has more than 44 half-hours behind it), so I rely on Part 2's regression, which holds station, time of day and season fixed: any rain is associated with at least 22% fewer departures (more in heavier rain), and temperatures below 35°F with about 45% fewer than 65–75°F.
-- On the evening of a Knicks game at Madison Square Garden (Nov 8, 2024), arrivals at nearby stations were within the range of other Friday evenings.
+### Findings
+- Monthly rides rose from about 2 million in January and February to a plateau from June through October, peaking at 5.1 million in October.
+- 49 of the 50 busiest stations are in Manhattan. Traffic at individual stations varies a lot: at the busiest station, the standard deviation across half-hours is about as large as the mean.
+- Rides increase with temperature. Heavy rain was too rare in 2024 to compare reliably in the heatmap (no cell with more than 1 mm of rain covers more than 44 half-hours). In the Part 2 regression, which controls for station, time of day and season, any rain is associated with at least 22% fewer departures, and temperatures below 35°F with about 45% fewer than 65–75°F.
+- Arrivals near Madison Square Garden before the Nov 8 Knicks game were within the range of other Friday evenings.
 
 ![Monthly rides](figures/monthly_trend.png)
 
@@ -23,50 +22,41 @@ Two questions about NYC Citi Bike, using all 44.2 million trips from 2024:
 
 ![Rides by temperature and precipitation](figures/temp_precip_heatmap.png)
 
-Station maps count *rides in + out* (each ride counts at both its start and end station); citywide figures count each ride once. An interactive version of the station map is in [`station_demand_map.html`](station_demand_map.html) (download and open in a browser).
+The station map counts rides starting or ending at each station; the citywide charts count each ride once. An interactive map is in [`station_demand_map.html`](station_demand_map.html) (open it in a browser).
 
----
+## Part 2: Wait or ride to another station?
 
-## Part 2: Wait or ride on?
+When a rider arrives to return a bike and every dock is taken, they can wait for a dock to open or ride to a nearby station and walk back.
 
-You ride up to your destination station to return a bike and every dock is taken. Should you wait for someone to take a bike out, or ride to a nearby station and walk back?
+### Method
+- Each station's departure rate was estimated from trips on days 1–21 of each month: its usual pattern for that half-hour and day type, times a citywide weather and season multiplier from a Poisson regression. Each departure frees a dock, so the rate gives the probability that a dock opens within a given time.
+- These probabilities were checked on days 22–end against 2-minute station status snapshots taken while stations were full. A three-parameter correction was fitted on days 15–21.
+- 47,894 full-station moments from days 22–end were replayed. At each one, a rule chose between waiting and riding to one of the 5 nearest stations within 500 m, and the choice was scored using what actually happened.
 
-**What I did**
-- Estimated each station's departure rate (its usual pattern for that half-hour and day type, times a citywide weather and season multiplier from a Poisson regression) from trips on days 1–21 of each month.
-- Turned the rate into the chance that a dock opens within *w* minutes, and an expected wait.
-- Checked those probabilities against 2-minute station status snapshots at moments when stations were really full, on the held-out days 22–end, and fitted a small three-parameter correction on days 15–21.
-- Replayed 47,894 real full-station moments from the held-out days. Each rule chose between staying and the 5 nearest stations within 500 m, and each choice was scored by what actually happened.
+### Results
+Total minutes per rider: ride to the chosen station, wait there (capped at 60 minutes), and walk back. The last column is the share of riders still waiting after 60 minutes at the chosen station.
 
-**Results**, per rider. Total minutes = ride to the chosen station + wait there + walk back, with **the wait capped at 60 minutes**. The last column is the share of riders still waiting after 60 minutes at the station they chose (not counting the ride there).
-
-| Rule | Uses live data | Mean | 90th percentile | Still waiting after 60 min at chosen station |
+| Rule | Live data | Mean | 90th percentile | Still waiting after 60 min |
 |---|---|---|---|---|
 | Always wait | no | 23.2 | 60.0 | 19.0% |
-| Always ride to the nearest station (stay if none within 500 m) | no | 12.9 | 35.9 | 6.4% |
+| Always ride to the nearest station (if one is within 500 m) | no | 12.9 | 35.9 | 6.4% |
 | Model, trip-based | no | 11.4 | 24.0 | 4.0% |
-| **Model, recalibrated** | no | **10.8** | **20.2** | 3.5% |
-| Nearest station showing open docks (app-style rule) | yes | 7.4 | 9.7 | 1.0% |
+| Model, recalibrated | no | 10.8 | 20.2 | 3.5% |
+| Nearest station showing open docks | yes | 7.4 | 9.7 | 1.0% |
 | Model, trip-based + live | yes | 7.9 | 11.8 | 1.8% |
-| **Model, recalibrated + live** | yes | **7.3** | **9.8** | 1.0% |
-| Hindsight best (knows the future) | | 5.4 | 6.9 | 0.3% |
+| Model, recalibrated + live | yes | 7.3 | 9.8 | 1.0% |
+| Best choice in hindsight | | 5.4 | 6.9 | 0.3% |
 
 ![Decision rules compared](figures/decision_model/decision_rules_comparison.png)
 
-**What it shows**
-- **Without live data**, the recalibrated model does better than the simple rules tested: 10.8 minutes on average vs. 12.9 for always riding to the nearest station, and 20.2 vs. 35.9 at the 90th percentile.
-- **With live data**, the app-style rule and the recalibrated model tie (7.4 vs. 7.3 minutes). The uncalibrated model does worse than the simple rule (7.9 minutes). It overestimates how quickly docks open at full stations (16.8% predicted vs. 14.4% actual within 10 minutes) and waits for 19% of riders, against 4% for the recalibrated model.
-- Hindsight averages 5.4 minutes, about 2 minutes better than the best rules. In hindsight, waiting was the best choice for about a quarter of riders.
+Without live dock counts, the recalibrated model averaged 10.8 minutes, compared with 12.9 for always riding to the nearest station. With live dock counts, the recalibrated model and the nearest-open-dock rule had similar average times: 7.3 and 7.4 minutes. The trip-based model without the correction overestimated how quickly docks open at full stations and averaged 7.9 minutes with live data.
 
-**Limitations**
-- The replay includes only moments when every candidate station (the full station and its up to 5 nearest neighbors within 500 m) was in service and reporting for the whole hour (48k of 60k sampled), so it describes those conditions.
-- Waits are capped at 60 minutes and measured on a 2-minute grid. Riders are assumed not to affect each other, travel times are approximate, and the models use the weather observed over the next hour as a stand-in for a forecast.
-- These are point estimates from one year, without confidence intervals; differences of a few tenths of a minute are ties.
+### Limitations
+- Only moments when the full station and its candidate neighbors were all in service and reporting for the following hour were replayed (47,894 of 60,000 sampled).
+- Waits are capped at 60 minutes and measured in 2-minute steps. The replay assumes riders don't affect each other, estimates travel time from straight-line distance, and uses observed weather in place of a forecast.
+- No confidence intervals were calculated, so small differences should not be interpreted as meaningful improvements.
 
-Details, diagnostics and the full list of limitations are in the notebook.
-
----
-
-## How to Run
+## How to run
 1. Create an environment (Python 3.10+, tested on 3.13):
    ```bash
    python3 -m venv .venv
@@ -74,10 +64,10 @@ Details, diagnostics and the full list of limitations are in the notebook.
    pip install -r requirements.txt
    ```
 2. Download the 2024 monthly trip files from [Citi Bike System Data](https://citibikenyc.com/system-data) and unzip them into `data/trips/`.
-3. Run the notebooks top to bottom. `Decision_model.ipynb` downloads the station status file (4.2 GB, public, no login) into `data/status/` on first run and builds a smaller cache. Each notebook loads a full year of trips and needs several GB of RAM; each took about 10 minutes on a laptop.
+3. Run the notebooks top to bottom. `Decision_model.ipynb` downloads the station status file (4.2 GB, public) into `data/status/` on its first run. Both notebooks load all 2024 trips into memory; they were run on a laptop with 16 GB of RAM.
 
-## Data and Credits
-- Trip data: [Citi Bike System Data](https://citibikenyc.com/system-data), used under the Citi Bike data license agreement.
+## Data
+- Trips: [Citi Bike System Data](https://citibikenyc.com/system-data), used under the Citi Bike data license agreement.
 - Station status snapshots: [rosenthal/citi-bike-stations](https://www.kaggle.com/datasets/rosenthal/citi-bike-stations) on Kaggle (CC BY 4.0).
 - Weather: [Meteostat](https://meteostat.net) (CC BY-NC 4.0).
 - Neighborhood boundaries: NYC Neighborhood Tabulation Areas (`Neighborhood_NTA.geojson`).
