@@ -37,15 +37,15 @@ You ride up to your destination station to return a bike and every dock is taken
 - Checked those probabilities against 2-minute station status snapshots at moments when stations were really full, on the held-out days 22–end, and fitted a small three-parameter correction on days 15–21.
 - Replayed 47,894 real full-station moments from the held-out days. Each rule chose between staying and the 5 nearest stations within 500 m, and each choice was scored by what actually happened.
 
-**Results.** Minutes from arriving at the full station until docked and back at the destination, per rider. **Waits are capped at 60 minutes**, so a rider still without a dock after an hour counts as 60.
+**Results**, per rider. Total minutes = ride to the chosen station + wait there + walk back, with **the wait capped at 60 minutes**. The last column is the share of riders still waiting after 60 minutes at the station they chose (not counting the ride there).
 
-| Rule | Uses live data | Mean | 90th percentile | No dock within 60 min |
+| Rule | Uses live data | Mean | 90th percentile | Still waiting after 60 min at chosen station |
 |---|---|---|---|---|
 | Always wait | no | 23.2 | 60.0 | 19.0% |
 | Always ride to the nearest station (stay if none within 500 m) | no | 12.9 | 35.9 | 6.4% |
 | Model, trip-based | no | 11.4 | 24.0 | 4.0% |
 | **Model, recalibrated** | no | **10.8** | **20.2** | 3.5% |
-| Ride to the nearest station showing open docks (the app today) | yes | 7.4 | 9.7 | 1.0% |
+| Nearest station showing open docks (app-style rule) | yes | 7.4 | 9.7 | 1.0% |
 | Model, trip-based + live | yes | 7.9 | 11.8 | 1.8% |
 | **Model, recalibrated + live** | yes | **7.3** | **9.8** | 1.0% |
 | Hindsight best (knows the future) | | 5.4 | 6.9 | 0.3% |
@@ -58,7 +58,7 @@ You ride up to your destination station to return a bike and every dock is taken
 - Hindsight averages 5.4 minutes, about 2 minutes better than the best rules. In hindsight, waiting was the best choice for about a quarter of riders.
 
 **Limitations**
-- The replay includes only moments when every station within reach was in service and reporting for the whole hour (48k of 60k sampled), so it describes those conditions.
+- The replay includes only moments when every candidate station (the full station and its up to 5 nearest neighbors within 500 m) was in service and reporting for the whole hour (48k of 60k sampled), so it describes those conditions.
 - Waits are capped at 60 minutes and measured on a 2-minute grid. Riders are assumed not to affect each other, travel times are approximate, and the models use the weather observed over the next hour as a stand-in for a forecast.
 - These are point estimates from one year, without confidence intervals; differences of a few tenths of a minute are ties.
 
