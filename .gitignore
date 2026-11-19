@@ -11,7 +11,6 @@ __pycache__/
 
 # Raw / large data files (see README for where to get them)
 data/
-data 2/
 dataframe_final.csv
 
 # Personal notes (methodology write-up, not published)
