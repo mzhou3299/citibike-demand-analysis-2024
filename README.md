@@ -54,12 +54,13 @@ Total minutes per rider: ride to the chosen station, wait there (capped at 60 mi
 
 Without live dock counts, the recalibrated model averaged 10.8 minutes, compared with 12.9 for always riding to the nearest station (2.0 minutes faster; 95% interval 1.7 to 2.4, from resampling test days).
 
-With live dock counts, the recalibrated model and the nearest-open-dock rule had similar average times: 7.3 and 7.4 minutes. Both treat a station showing an open dock as a sure thing, but a quarter of riders were sent to a station showing just one, and 22% of those found it full on arrival. The fill-aware model averaged 7.1 minutes, 0.31 minutes faster than the nearest-open-dock rule (95% interval 0.21 to 0.41). Simply preferring stations with 2+ open docks got about half of that improvement. The trip-based model without the correction overestimated how quickly docks open at full stations and averaged 7.9 minutes with live data.
+With live dock counts, the recalibrated model and the nearest-open-dock rule had similar average times: 7.3 and 7.4 minutes. Both treat a station showing an open dock as a sure thing, but a quarter of riders were sent to a station showing just one, and 22% of those found it full on arrival. The fill-aware model averaged 7.1 minutes, 0.30 minutes faster than the nearest-open-dock rule (95% interval 0.21 to 0.39). Simply preferring stations with 2+ open docks got about half of that improvement. The fill-aware model was 0.15 minutes faster than the 2+ rule (95% interval 0.08 to 0.22), but the 2+ rule had fewer riders over 15 minutes (3.7% vs. 4.3%). The trip-based model without the correction overestimated how quickly docks open at full stations and averaged 7.9 minutes with live data.
 
 ### Limitations
 - Only moments when the full station and its candidate neighbors were all in service and reporting for the following hour were replayed (47,894 of 60,000 sampled).
 - Waits are capped at 60 minutes and measured in 2-minute steps. The replay assumes riders don't affect each other, estimates travel time from straight-line distance, and uses observed weather in place of a forecast.
-- Intervals come from resampling the 113 test days. They don't include uncertainty in the fitted models, and all results come from one year of data.
+- The fill-aware model lets a station showing open docks fill during the ride, but assumes a full station stays full until the rider arrives.
+- Intervals come from resampling the 113 test days. They don't include uncertainty in the fitted models, and all results come from one year of data. The fill-aware and 2+ rules were added after looking at earlier results on the same test days, so those comparisons are exploratory.
 
 ## How to run
 1. Create an environment (Python 3.10+, tested on 3.13):
