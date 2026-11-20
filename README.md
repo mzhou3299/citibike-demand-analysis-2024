@@ -2,7 +2,7 @@
 
 This project explores demand across 44.2 million NYC Citi Bike trips in 2024, then tests a simple model for deciding whether to wait at a full station or ride to another one.
 
-- Part 1, demand patterns: [`Final Notebook.ipynb`](Final%20Notebook.ipynb)
+- Part 1, demand patterns: [`Demand_analysis.ipynb`](Demand_analysis.ipynb)
 - Part 2, the wait-or-ride decision: [`Decision_model.ipynb`](Decision_model.ipynb)
 
 ## Part 1: Demand patterns
@@ -13,7 +13,7 @@ Arrivals and departures were counted at each station in 30-minute windows and jo
 ### Findings
 - Monthly rides rose from about 2 million in January and February to a plateau from June through October, peaking at 5.1 million in October.
 - 49 of the 50 busiest stations are in Manhattan. Traffic at individual stations varies a lot: at the busiest station, the standard deviation across half-hours is about as large as the mean.
-- Rides increase with temperature. Heavy rain was too rare in 2024 to compare reliably in the heatmap (no cell with more than 1 mm of rain covers more than 44 half-hours). In the Part 2 regression, which controls for station, time of day and season, any rain is associated with at least 22% fewer departures, and temperatures below 35°F with about 45% fewer than 65–75°F.
+- Rides increase with temperature. Comparisons involving heavier rain in the heatmap are based on small samples. In the Part 2 regression, which controls for station, time of day and season, any rain is associated with at least 22% fewer departures, and temperatures below 35°F with about 45% fewer than 65–75°F.
 - Arrivals near Madison Square Garden before the Nov 8 Knicks game were within the range of other Friday evenings.
 
 ![Monthly rides](figures/monthly_trend.png)
