@@ -32,6 +32,7 @@ When a rider arrives to return a bike and every dock is taken, they can wait for
 - Each station's departure rate was estimated from trips on days 1–21 of each month: its usual pattern for that half-hour and day type, times a citywide weather and season multiplier from a Poisson regression. Each departure frees a dock, so the rate gives the probability that a dock opens within a given time.
 - These probabilities were checked on days 22–end against 2-minute station status snapshots taken while stations were full. A three-parameter correction was fitted on days 15–21.
 - 47,894 full-station moments from days 22–end were replayed. At each one, a rule chose between waiting and riding to one of the 5 nearest stations within 500 m, and the choice was scored using what actually happened.
+- With live dock counts, a station showing an open dock can still fill before the rider arrives. A fill-aware version of the model estimates that chance from days 15–21, based on how many docks are open and how busy the station usually is at that time.
 
 ### Results
 Total minutes per rider: ride to the chosen station, wait there (capped at 60 minutes), and walk back. The last column is the share of riders still waiting after 60 minutes at the chosen station.
@@ -43,18 +44,22 @@ Total minutes per rider: ride to the chosen station, wait there (capped at 60 mi
 | Model, trip-based | no | 11.4 | 24.0 | 4.0% |
 | Model, recalibrated | no | 10.8 | 20.2 | 3.5% |
 | Nearest station showing open docks | yes | 7.4 | 9.7 | 1.0% |
+| Nearest station showing 2+ open docks | yes | 7.2 | 9.8 | 0.9% |
 | Model, trip-based + live | yes | 7.9 | 11.8 | 1.8% |
 | Model, recalibrated + live | yes | 7.3 | 9.8 | 1.0% |
+| Model, recalibrated + live, fill-aware | yes | 7.1 | 9.6 | 0.9% |
 | Best choice in hindsight | | 5.4 | 6.9 | 0.3% |
 
 ![Decision rules compared](figures/decision_model/decision_rules_comparison.png)
 
-Without live dock counts, the recalibrated model averaged 10.8 minutes, compared with 12.9 for always riding to the nearest station. With live dock counts, the recalibrated model and the nearest-open-dock rule had similar average times: 7.3 and 7.4 minutes. The trip-based model without the correction overestimated how quickly docks open at full stations and averaged 7.9 minutes with live data.
+Without live dock counts, the recalibrated model averaged 10.8 minutes, compared with 12.9 for always riding to the nearest station (2.0 minutes faster; 95% interval 1.7 to 2.4, from resampling test days).
+
+With live dock counts, the recalibrated model and the nearest-open-dock rule had similar average times: 7.3 and 7.4 minutes. Both treat a station showing an open dock as a sure thing, but a quarter of riders were sent to a station showing just one, and 22% of those found it full on arrival. The fill-aware model averaged 7.1 minutes, 0.31 minutes faster than the nearest-open-dock rule (95% interval 0.21 to 0.41). Simply preferring stations with 2+ open docks got about half of that improvement. The trip-based model without the correction overestimated how quickly docks open at full stations and averaged 7.9 minutes with live data.
 
 ### Limitations
 - Only moments when the full station and its candidate neighbors were all in service and reporting for the following hour were replayed (47,894 of 60,000 sampled).
 - Waits are capped at 60 minutes and measured in 2-minute steps. The replay assumes riders don't affect each other, estimates travel time from straight-line distance, and uses observed weather in place of a forecast.
-- No confidence intervals were calculated, so small differences should not be interpreted as meaningful improvements.
+- Intervals come from resampling the 113 test days. They don't include uncertainty in the fitted models, and all results come from one year of data.
 
 ## How to run
 1. Create an environment (Python 3.10+, tested on 3.13):
