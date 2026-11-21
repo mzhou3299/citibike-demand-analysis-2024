@@ -18,3 +18,6 @@ docs/
 
 # OS junk files
 .DS_Store
+
+# Archived experiments (kept locally, not published)
+archive/
